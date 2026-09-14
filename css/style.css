@@ -264,6 +264,16 @@ p { margin: 0 0 1em; }
   .hero::before {
     display: none;
   }
+
+  /* .hero centre son contenu verticalement (justify-content: center) dans
+     un padding-top de 5rem mais aucun padding-bottom : l'espace restant se
+     répartit alors surtout en haut, laissant le bouton "Me contacter" du
+     bas du hero collé au bord de la section sur les écrans très hauts
+     (ex. Samsung Galaxy S25). On ajoute un padding-bottom équivalent pour
+     rétablir une marge symétrique. */
+  .hero {
+    padding-bottom: 5rem;
+  }
 }
 
 
@@ -273,49 +283,45 @@ p { margin: 0 0 1em; }
   margin-bottom: 0.35em;
 }
 
-/* Halo lumineux qui suit le curseur (cursor-following glow), teinte
-   Lavande, DANS les lettres du nom elles-mêmes (et non derrière) : un
-   calque (.hero-name-glow, injecté par main.js — copie du même texte,
-   aria-hidden) se superpose exactement au nom, avec un dégradé radial
-   découpé par le texte via background-clip: text. Là où le curseur passe,
-   les lettres de ce calque deviennent visibles (lavande) par-dessus le
-   nom blanc ; ailleurs le calque reste transparent et laisse voir le nom
-   normal en dessous.
-   Le positionnement (superposition exacte, opacité à 0 par défaut) reste
-   volontairement HORS media query : ce calque n'est injecté par le JS que
-   sur pointeur fin avec survol, mais s'il existe dans le DOM il doit
-   TOUJOURS être superposé et invisible par défaut — sinon un décalage
-   entre l'évaluation JS et CSS de la media query le ferait retomber dans
-   le flux normal et s'afficher comme un second nom en double. Seule
-   l'apparition au survol (l'interaction) est réservée aux pointeurs fins
-   avec survol : sur tactile il n'y a pas de curseur à suivre. */
-.hero h1 {
-  position: relative;
+/* Apparition du nom (h1) au chargement de la page, lettre par lettre,
+   horizontalement : chaque lettre glisse depuis la gauche de son propre
+   masque (overflow: hidden, juste assez large pour elle) jusqu'à sa
+   position normale, avec un léger décalage (--char-i, posé par main.js)
+   d'une lettre à l'autre pour créer la cascade. Les lettres sont
+   regroupées par « mot » (name-word, voir main.js) en white-space: nowrap
+   pour ne jamais couper un mot en fin de ligne — un mot composé comme
+   « Mary-Élizabeth » est lui-même subdivisé juste après le trait d'union
+   pour rester capable de retourner à la ligne sur petit écran. Se joue
+   une seule fois, au chargement — pas au défilement, puisque le nom est
+   déjà visible à l'écran dès l'arrivée sur la page. */
+.name-word {
+  display: inline-block;
+  white-space: nowrap;
 }
-.hero-name-glow {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.35s ease;
-  background: radial-gradient(
-    circle 140px at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    #dfdcff,
-    transparent 70%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+.name-char-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  /* Un peu de padding vertical (annulé par une marge négative égale)
+     évite de rogner l'accent du « É » ou le jambage du « g », malgré le
+     line-height très serré des titres. */
+  padding: 0.05em 0 0.1em;
+  margin: -0.05em 0 -0.1em;
 }
-@media (hover: hover) and (pointer: fine) {
-  .hero h1:hover .hero-name-glow {
-    opacity: 1;
-  }
+.name-char {
+  display: inline-block;
+  transform: translateX(-100%);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--char-i, 0) * 35ms);
+  will-change: transform;
+}
+.hero h1.is-revealed .name-char {
+  transform: translateX(0);
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero-name-glow {
-    display: none !important;
-  }
+  /* Le JS ne découpe déjà pas le nom dans ce cas, mais on neutralise quand
+     même si jamais la structure existe (contenu servi en cache, etc.). */
+  .name-char { transition: none; transform: none; }
 }
 
 .hero-lede {
@@ -329,47 +335,7 @@ p { margin: 0 0 1em; }
   margin-bottom: 0.7em;
 }
 
-/* Apparition au défilement du paragraphe d'intro (hero-lede) : chaque
-   lettre est révélée dans son propre masque (overflow: hidden), avec un
-   effet de rotation 3D (voir main.js pour le découpage en mots/lettres et
-   le déclenchement via IntersectionObserver). Le texte apparaît dès le
-   chargement (la section est déjà visible à l'écran) puis ne rejoue plus
-   jamais : revenir dans la section en remontant le défilement ne le
-   refait pas bouger. */
-.lede-word {
-  display: inline-block;
-  white-space: nowrap;
-}
-.lede-char-mask {
-  display: inline-block;
-  overflow: hidden;
-  vertical-align: top;
-  /* Assez d'air sous (et un peu au-dessus, pour les accents) la ligne de
-     base pour ne jamais rogner les jambages (g, j, p, q, y) ni les
-     accents des majuscules (É) : line-height: 1 les coupait net. */
-  line-height: 1.3;
-  padding-bottom: 0.12em;
-  margin-bottom: -0.12em;
-  /* Point de fuite propre à chaque lettre, pour une rotation symétrique
-     quelle que soit sa position dans le paragraphe. */
-  perspective: 260px;
-}
-.lede-char {
-  display: inline-block;
-  transform-style: preserve-3d;
-  transform: translateY(65%) rotateX(-85deg);
-  transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
-  transition-delay: calc(var(--char-i, 0) * 8ms);
-  will-change: transform;
-}
-.hero-lede.is-revealed .lede-char {
-  transform: translateY(0) rotateX(0deg);
-}
-@media (prefers-reduced-motion: reduce) {
-  /* Le JS ne découpe déjà pas le texte dans ce cas, mais si jamais la
-     structure existe (contenu servi en cache, etc.), on la neutralise. */
-  .lede-char { transition: none; transform: none; }
-}
+
 
 /* Utilitaire : contenu réservé aux lecteurs d'écran, visuellement masqué. */
 .sr-only {

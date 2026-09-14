@@ -57,67 +57,29 @@ mainNav.querySelectorAll('a').forEach((link) => {
   });
 });
 
-// Halo lumineux qui suit le curseur DANS les lettres du nom (hero h1) —
-// voir .hero-name-glow dans le CSS, qui lit ces variables. Le calque
-// .hero-name-glow (copie du nom, aria-hidden) est injecté ici même,
-// superposé exactement au nom réel ; son dégradé radial n'est visible
-// qu'à travers le texte (background-clip: text), donnant l'impression
-// que les lettres s'illuminent en lavande sous le curseur. N'est activé
-// que sur pointeur fin avec survol : sur tactile, il n'y a pas de survol
-// continu à suivre — et le CSS désactive déjà tout ça pour le mouvement
-// réduit, donc on l'évite ici aussi pour ne pas attacher un écouteur pour
-// rien.
-const canHoverNameGlow = window.matchMedia('(hover: hover) and (pointer: fine)').matches
-  && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Apparition du nom (h1) au chargement de la page, lettre par lettre et
+// horizontalement (voir les classes .name-word / .name-char-mask /
+// .name-char dans le CSS). IMPORTANT : ce découpage doit se faire AVANT
+// la mise en place du halo de survol un peu plus bas, puisque celui-ci
+// clone le innerHTML du nom — s'il clonait le texte brut, le calque du
+// halo n'aurait pas exactement la même structure (mêmes espacements
+// inter-lettres) que le nom réel, et les deux pourraient très légèrement
+// se désaligner. Sous mouvement réduit, on ne découpe pas du tout : le
+// nom reste un texte normal, sans effet.
+const heroNameEl = document.querySelector('.hero h1');
 
-if (canHoverNameGlow) {
-  const heroName = document.querySelector('.hero h1');
-
-  if (heroName) {
-    const nameGlowOverlay = document.createElement('span');
-    nameGlowOverlay.className = 'hero-name-glow';
-    nameGlowOverlay.setAttribute('aria-hidden', 'true');
-    nameGlowOverlay.innerHTML = heroName.innerHTML;
-    heroName.appendChild(nameGlowOverlay);
-
-    let nameGlowTicking = false;
-    let pendingNameX = 0;
-    let pendingNameY = 0;
-
-    const applyNameGlowPosition = () => {
-      heroName.style.setProperty('--mouse-x', `${pendingNameX}px`);
-      heroName.style.setProperty('--mouse-y', `${pendingNameY}px`);
-      nameGlowTicking = false;
-    };
-
-    heroName.addEventListener('mousemove', (event) => {
-      const rect = heroName.getBoundingClientRect();
-      pendingNameX = event.clientX - rect.left;
-      pendingNameY = event.clientY - rect.top;
-      if (!nameGlowTicking) {
-        window.requestAnimationFrame(applyNameGlowPosition);
-        nameGlowTicking = true;
-      }
-    });
-  }
-}
-
-// Révélation lettre par lettre (masque + rotation 3D) au défilement,
-// appliquée au paragraphe d'intro (hero-lede) — voir les classes .lede-*
-// dans le CSS. Le texte apparaît dès le chargement (la section est déjà à
-// l'écran) puis ne rejoue plus jamais : une fois révélé, on cesse
-// d'observer l'élément, pour qu'un retour dans la section (en remontant
-// le défilement) ne le refasse pas bouger. On respecte le mouvement
-// réduit en laissant simplement le texte intact.
-const setupLetterReveal = (el, { wordClass, maskClass, charClass }) => {
-  if (!el) return;
-
+if (heroNameEl && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   // Texte de secours pour les lecteurs d'écran : capturé avant le
-  // découpage, car celui-ci multiplie les nœuds (un par lettre) et
-  // rendrait la lecture au lecteur d'écran pénible lettre par lettre.
+  // découpage, qui multiplie les nœuds (un par lettre) et rendrait la
+  // lecture au lecteur d'écran pénible lettre par lettre.
   const accessibleClone = document.createElement('span');
   accessibleClone.className = 'sr-only';
-  accessibleClone.textContent = el.textContent;
+  // heroNameEl.textContent collerait les deux lignes ("Mary-ÉlizabethLagacé")
+  // puisque le <br> entre elles n'est pas un nœud texte : on le remplace
+  // explicitement par une espace pour une lecture correcte.
+  accessibleClone.textContent = Array.from(heroNameEl.childNodes)
+    .map((node) => (node.nodeName === 'BR' ? ' ' : node.textContent))
+    .join('');
 
   // Découpe un nœud de texte en mots (conservés d'un seul bloc, pour ne
   // jamais couper un mot en fin de ligne) puis en lettres, chacune dans
@@ -142,12 +104,12 @@ const setupLetterReveal = (el, { wordClass, maskClass, charClass }) => {
         if (segment === '') return;
         if (i > 0) fragment.appendChild(document.createTextNode('​'));
         const word = document.createElement('span');
-        word.className = wordClass;
+        word.className = 'name-word';
         Array.from(segment).forEach((letter) => {
           const mask = document.createElement('span');
-          mask.className = maskClass;
+          mask.className = 'name-char-mask';
           const char = document.createElement('span');
-          char.className = charClass;
+          char.className = 'name-char';
           char.textContent = letter;
           mask.appendChild(char);
           word.appendChild(mask);
@@ -159,8 +121,8 @@ const setupLetterReveal = (el, { wordClass, maskClass, charClass }) => {
   };
 
   // Reconstruit chaque nœud enfant en préservant les éléments existants
-  // (comme .hero-lede-line ou le <br> du nom, qui doivent rester tels
-  // quels) et en découpant leur contenu textuel.
+  // (le <br> entre les deux lignes du nom doit rester tel quel) et en
+  // découpant leur contenu textuel.
   const rebuildWithLetters = (root) => {
     Array.from(root.childNodes).forEach((node) => {
       if (node.nodeType === Node.TEXT_NODE) {
@@ -171,41 +133,26 @@ const setupLetterReveal = (el, { wordClass, maskClass, charClass }) => {
     });
   };
 
-  rebuildWithLetters(el);
-  el.setAttribute('aria-hidden', 'true');
-  el.insertAdjacentElement('afterend', accessibleClone);
+  rebuildWithLetters(heroNameEl);
+  heroNameEl.setAttribute('aria-hidden', 'true');
+  heroNameEl.insertAdjacentElement('afterend', accessibleClone);
 
-  // Index séquentiel (ordre de lecture) pour l'échelonnement du survol —
-  // posé après coup, une fois la structure finale en place.
-  el.querySelectorAll(`.${charClass}`).forEach((char, i) => {
+  // Index séquentiel (ordre de lecture) pour l'échelonnement de la
+  // cascade lettre par lettre.
+  heroNameEl.querySelectorAll('.name-char').forEach((char, i) => {
     char.style.setProperty('--char-i', i);
   });
 
-  if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            el.classList.add('is-revealed');
-            // Joué une seule fois : on n'observe plus, pour qu'un retour
-            // ultérieur dans la section ne rejoue jamais l'animation.
-            observer.unobserve(el);
-          }
-        });
-      },
-      { threshold: 0 }
-    );
-    observer.observe(el);
-  } else {
-    el.classList.add('is-revealed');
-  }
-};
-
-if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  setupLetterReveal(document.querySelector('.hero-lede'), {
-    wordClass: 'lede-word',
-    maskClass: 'lede-char-mask',
-    charClass: 'lede-char',
+  // Le nom est toujours visible dès l'arrivée sur la page (en haut du
+  // hero) : on déclenche donc l'apparition directement, pas au
+  // défilement. Double rAF : force le navigateur à peindre l'état
+  // initial (masqué) avant d'ajouter la classe qui déclenche la
+  // transition, pour ne jamais risquer de fusionner les deux états en
+  // une seule peinture.
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      heroNameEl.classList.add('is-revealed');
+    });
   });
 }
 
