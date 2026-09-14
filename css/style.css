@@ -1,0 +1,846 @@
+/* ==========================================================================
+   Mary-Élizabeth Lagacé — Portfolio
+   Neo-minimalisme : noir / blanc / gris, sans couleur d'accent, titres
+   condensés en majuscules, labels monospace, lignes fines. Les photos
+   (en couleur) portent l'expression chromatique.
+   ========================================================================== */
+
+:root {
+  --ink: #0f1417; /* Carbon Black */
+  --paper: #ffffff; /* White */
+  --paper-2: #f5f5f5;
+  --line: rgba(15, 20, 23, 0.14);
+  --line-light: rgba(255, 255, 255, 0.22);
+
+  /* Couleur cible du panneau final (Contact/pied de page) : le fond
+     transitionne de --ink vers celle-ci selon la progression du
+     défilement — voir .reveal-footer dans main.js. */
+  --footer-accent: #dfdcff; /* Lavande pâle */
+
+  --font-display: "Archivo", system-ui, sans-serif;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+  --container: 1160px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--paper);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+
+/* Surlignage de sélection : fond lavande (--footer-accent), texte carbon
+   black pour rester lisible même sur les sections sombres (hero). Exclu
+   des boutons (.btn), qui reprennent le surlignage par défaut du
+   navigateur — `revert` ne fonctionne pas ici (les moteurs le résolvent
+   à travers la règle universelle ci-dessus plutôt qu'au style natif), on
+   repasse donc explicitement par les couleurs système Highlight/HighlightText. */
+::selection { background: var(--footer-accent); color: var(--ink); }
+::-moz-selection { background: var(--footer-accent); color: var(--ink); }
+.btn::selection { background-color: Highlight; color: HighlightText; }
+.btn::-moz-selection { background-color: Highlight; color: HighlightText; }
+
+.wrap {
+  width: 100%;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.75rem 1.25rem;
+  z-index: 200;
+}
+.skip-link:focus { left: 1rem; top: 1rem; }
+
+/* ---------- Headings & type ---------- */
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.6em;
+  text-transform: uppercase;
+}
+
+h2 { font-size: clamp(1.9rem, 3.6vw, 2.9rem); max-width: 18ch; }
+h3 { font-size: 1.05rem; letter-spacing: -0.005em; }
+
+h4 {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--ink);
+  opacity: 0.55;
+  margin: 0 0 0.6em;
+}
+
+p { margin: 0 0 1em; }
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 500;
+  color: var(--ink);
+  opacity: 0.6;
+  margin: 0 0 1em;
+}
+.eyebrow-light { color: var(--paper); opacity: 0.65; }
+
+.section-intro {
+  max-width: 64ch;
+  font-size: 1.05rem;
+  opacity: 0.75;
+}
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.7rem;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1.5px solid transparent;
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  cursor: pointer;
+}
+.btn:hover { transform: translateY(-2px); }
+
+.btn-solid {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.btn-solid:hover { background: var(--paper); color: var(--ink); border-color: var(--ink); }
+
+.btn-outline {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.btn-outline:hover { background: var(--ink); color: var(--paper); }
+
+.btn-outline-light {
+  border-color: var(--line-light);
+  color: var(--paper);
+}
+.btn-outline-light:hover { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+
+/* On dark backgrounds (hero), the solid button must invert so it stays visible */
+.hero-actions .btn-solid {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--paper);
+}
+.hero-actions .btn-solid:hover { background: var(--ink); color: var(--paper); border-color: var(--paper); }
+
+.btn-small { padding: 0.55rem 1.2rem; font-size: 0.72rem; }
+
+/* ---------- Header / nav ---------- */
+
+.site-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid transparent;
+  transition: background 0.25s ease, border-color 0.25s ease, padding 0.25s ease,
+    transform 0.3s ease;
+  /* Pas de `transform` déclaré ici à l'état par défaut (voir .is-hidden) :
+     tout `transform` autre que "none" créerait un nouveau bloc de
+     confinement pour le menu mobile en position: fixed (même piège que le
+     backdrop-filter réglé plus bas pour .nav-open) — la transition sait
+     très bien interpoler depuis "none" quand .is-hidden s'ajoute. */
+}
+.site-header.is-hidden {
+  transform: translateY(-100%);
+}
+.site-header.is-scrolled {
+  /* Verre dépoli teinté --paper (blanc), pour rester cohérent avec la
+     couleur de page derrière le flou. */
+  background: rgba(255, 255, 255, 0.62);
+  -webkit-backdrop-filter: saturate(180%) blur(18px);
+  backdrop-filter: saturate(180%) blur(18px);
+  border-bottom-color: rgba(17, 17, 17, 0.08);
+  box-shadow: 0 1px 24px rgba(17, 17, 17, 0.06);
+  padding: 0.75rem 0;
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .site-header.is-scrolled { background: rgba(255, 255, 255, 0.92); }
+}
+
+.header-inner { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+
+.main-nav { display: flex; gap: 0; }
+.main-nav a {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  opacity: 0.75;
+  padding: 0 1rem;
+  border-left: 1px solid var(--line);
+}
+.main-nav a:first-child { border-left: none; padding-left: 0; }
+.site-header:not(.is-scrolled) .main-nav a { color: var(--paper); border-left-color: var(--line-light); }
+.main-nav a:hover { opacity: 1; text-decoration: underline; text-underline-offset: 3px; }
+
+.header-cta { color: var(--ink); margin-left: auto; }
+.site-header:not(.is-scrolled) .header-cta { border-color: var(--line-light); color: var(--paper); }
+.site-header:not(.is-scrolled) .header-cta:hover { background: var(--paper); color: var(--ink); }
+
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  width: 40px; height: 40px;
+  background: none; border: none; cursor: pointer; padding: 0;
+  margin-left: auto;
+}
+/* Zone cliquable inchangée (40px, confort tactile) ; les barres elles-
+   mêmes sont plus courtes que la largeur du bouton pour donner un
+   pictogramme plus carré, moins étiré horizontalement. */
+.nav-toggle span { display: block; width: 24px; height: 2px; background: var(--ink); }
+.site-header:not(.is-scrolled) .nav-toggle span { background: var(--paper); }
+
+/* ---------- Hero ---------- */
+
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--ink);
+  color: var(--paper);
+  overflow: hidden;
+  padding-top: 5rem;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  /* La ligne reste à 8% du bord tant que ça la garde hors de la colonne de
+     texte (grands écrans). En dessous de ce seuil, le 8% empièterait sur le
+     texte du hero (titre/texte d'intro) : on la ramène plutôt dans la marge
+     fixe de .wrap (1.5rem, soit 24px), qui elle est toujours libre de texte. */
+  right: min(8%, max(24px, calc((100vw - 1160px) / 2 + 24px)));
+  width: 1px;
+  height: 100%;
+  background: var(--line-light);
+}
+@media (max-width: 720px) {
+  /* Purement décorative : on l'enlève plutôt que de la garder coincée dans
+     l'étroite marge du .wrap sur petit format. */
+  .hero::before {
+    display: none;
+  }
+}
+
+
+.hero h1 {
+  font-size: clamp(2.6rem, 8.4vw, 5.6rem);
+  color: var(--paper);
+  margin-bottom: 0.35em;
+}
+
+/* Halo lumineux qui suit le curseur (cursor-following glow), teinte
+   Lavande, DANS les lettres du nom elles-mêmes (et non derrière) : un
+   calque (.hero-name-glow, injecté par main.js — copie du même texte,
+   aria-hidden) se superpose exactement au nom, avec un dégradé radial
+   découpé par le texte via background-clip: text. Là où le curseur passe,
+   les lettres de ce calque deviennent visibles (lavande) par-dessus le
+   nom blanc ; ailleurs le calque reste transparent et laisse voir le nom
+   normal en dessous.
+   Le positionnement (superposition exacte, opacité à 0 par défaut) reste
+   volontairement HORS media query : ce calque n'est injecté par le JS que
+   sur pointeur fin avec survol, mais s'il existe dans le DOM il doit
+   TOUJOURS être superposé et invisible par défaut — sinon un décalage
+   entre l'évaluation JS et CSS de la media query le ferait retomber dans
+   le flux normal et s'afficher comme un second nom en double. Seule
+   l'apparition au survol (l'interaction) est réservée aux pointeurs fins
+   avec survol : sur tactile il n'y a pas de curseur à suivre. */
+.hero h1 {
+  position: relative;
+}
+.hero-name-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  background: radial-gradient(
+    circle 140px at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    #dfdcff,
+    transparent 70%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@media (hover: hover) and (pointer: fine) {
+  .hero h1:hover .hero-name-glow {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-name-glow {
+    display: none !important;
+  }
+}
+
+.hero-lede {
+  max-width: 64ch;
+  font-size: 1.1rem;
+  color: var(--paper);
+  opacity: 0.78;
+}
+.hero-lede-line {
+  display: block;
+  margin-bottom: 0.7em;
+}
+
+/* Apparition au défilement du paragraphe d'intro (hero-lede) : chaque
+   lettre est révélée dans son propre masque (overflow: hidden), avec un
+   effet de rotation 3D (voir main.js pour le découpage en mots/lettres et
+   le déclenchement via IntersectionObserver). Le texte apparaît dès le
+   chargement (la section est déjà visible à l'écran) puis ne rejoue plus
+   jamais : revenir dans la section en remontant le défilement ne le
+   refait pas bouger. */
+.lede-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+.lede-char-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  /* Assez d'air sous (et un peu au-dessus, pour les accents) la ligne de
+     base pour ne jamais rogner les jambages (g, j, p, q, y) ni les
+     accents des majuscules (É) : line-height: 1 les coupait net. */
+  line-height: 1.3;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+  /* Point de fuite propre à chaque lettre, pour une rotation symétrique
+     quelle que soit sa position dans le paragraphe. */
+  perspective: 260px;
+}
+.lede-char {
+  display: inline-block;
+  transform-style: preserve-3d;
+  transform: translateY(65%) rotateX(-85deg);
+  transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--char-i, 0) * 8ms);
+  will-change: transform;
+}
+.hero-lede.is-revealed .lede-char {
+  transform: translateY(0) rotateX(0deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Le JS ne découpe déjà pas le texte dans ce cas, mais si jamais la
+     structure existe (contenu servi en cache, etc.), on la neutralise. */
+  .lede-char { transition: none; transform: none; }
+}
+
+/* Utilitaire : contenu réservé aux lecteurs d'écran, visuellement masqué. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; }
+
+/* ---------- Sections ---------- */
+
+.section { padding: 6rem 0; }
+.section-cream { background: var(--paper); }
+.section-ink { background: var(--ink); color: var(--paper); }
+.section-title-light { color: var(--paper); }
+
+/* ---------- Photo frames (never stretched: fixed ratio + object-fit) ---------- */
+
+.photo-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--paper-2);
+  margin: 0;
+}
+.photo-frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.photo-frame.ratio-portrait { aspect-ratio: 4 / 5; }
+.photo-frame.ratio-square { aspect-ratio: 1 / 1; }
+
+.photo-frame figcaption {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 0.7rem 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0));
+}
+
+/* ---------- About ---------- */
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 4.5rem;
+  align-items: start;
+}
+
+.skills-heading {
+  margin-top: 2.2rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.55;
+}
+
+.expertise-block {
+  margin-top: 5rem;
+  padding-top: 4rem;
+  border-top: 1px solid var(--line);
+}
+.expertise-block h2 { max-width: none; }
+
+.expertise-grid {
+  margin-top: 2.2rem;
+  display: grid;
+  /* Trois colonnes fixes (deux rangées de trois vignettes) plutôt qu'un
+     auto-fit qui en casait quatre sur les grands écrans. */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.1rem;
+}
+.expertise-tile {
+  border-radius: 18px;
+  padding: 1.5rem 1.6rem;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(16, 17, 18, 0.1);
+  -webkit-backdrop-filter: blur(8px) saturate(150%);
+  backdrop-filter: blur(8px) saturate(150%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 2px 6px rgba(16, 17, 18, 0.05);
+}
+.expertise-tile-label {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: -0.005em;
+  margin-bottom: 0.6rem;
+}
+.expertise-tile-items {
+  font-family: var(--font-sans);
+  font-size: 0.96rem;
+  line-height: 1.6;
+  opacity: 0.7;
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .expertise-tile { background: rgba(255, 255, 255, 0.88); }
+}
+@media (max-width: 720px) {
+  .expertise-block { margin-top: 3.5rem; padding-top: 2.5rem; }
+}
+
+/* ---------- Photo slider ---------- */
+
+.photo-slider-section .wrap:first-child { margin-bottom: 2.5rem; }
+
+.slider {
+  overflow: hidden;
+}
+.slider-track {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 0 1.5rem;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.slider-track::-webkit-scrollbar { display: none; }
+.slider-slide {
+  position: relative;
+  overflow: hidden;
+  flex: 0 0 auto;
+  width: min(70vw, 420px);
+  aspect-ratio: 4 / 5;
+  border-radius: 4px;
+  background: var(--paper-2);
+  scroll-snap-align: start;
+}
+.slider-slide img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.slider-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+.slider-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+.slider-btn:hover { background: var(--ink); color: var(--paper); transform: translateY(-1px); }
+.slider-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ---------- Timeline ---------- */
+
+.timeline {
+  list-style: none;
+  margin: 2.5rem 0 0;
+  padding: 0 0 0 1.6rem;
+  border-left: 1px solid var(--line-light);
+}
+.timeline-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 1.5rem;
+  padding: 1.6rem 0;
+  border-top: 1px solid var(--line-light);
+}
+.timeline-item:last-child { border-bottom: 1px solid var(--line-light); }
+
+.timeline-dot {
+  position: absolute;
+  left: -1.85rem;
+  top: 2.1rem;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--paper);
+}
+
+.timeline-year {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  opacity: 0.75;
+}
+.timeline-body h3 { margin-bottom: 0.2em; color: var(--paper); text-transform: none; }
+.timeline-body p { margin: 0; opacity: 0.65; font-size: 0.95rem; }
+
+
+/* ---------- Two column / formation ---------- */
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; }
+
+.plain-list {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 1.1rem;
+}
+.plain-list li {
+  border-top: 1px solid var(--line-light);
+  padding-top: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.plain-list strong { text-transform: none; font-family: var(--font-sans); font-weight: 600; }
+.plain-list span { opacity: 0.6; font-family: var(--font-mono); font-size: 0.82rem; }
+
+.tag-group { margin-top: 1.8rem; }
+.tag-group:first-of-type { margin-top: 2rem; }
+.tag-group-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.5;
+  margin-bottom: 0.6em;
+}
+.tag-list {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+}
+.tag-list li {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  background: rgba(255, 255, 255, 0.06);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  backdrop-filter: blur(10px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .tag-list li { background: rgba(255, 255, 255, 0.1); }
+}
+
+/* ---------- Panneau final : "Envie de jaser?" + pied de page ---------- */
+/* Le contenu principal (#main) doit peindre par-dessus le panneau fixe
+   ci-dessous pendant le défilement normal — sans quoi un élément en
+   position fixe peindrait au-dessus du contenu statique, quel que soit
+   l'ordre dans le document. */
+#main { position: relative; z-index: 2; background: var(--paper); }
+
+/* Réserve, dans le flux normal, l'espace de défilement que le panneau fixe
+   (qui ne compte pour rien dans la hauteur de la page) doit pouvoir
+   « consommer » pour se révéler progressivement. */
+.reveal-footer-spacer { height: 100vh; }
+
+.reveal-footer {
+  position: fixed;
+  inset: auto 0 0 0;
+  height: 100vh;
+  width: 100vw;
+  z-index: 1;
+  overflow: hidden;
+  /* --footer-bg/--footer-fg sont réglées image par image en JS selon la
+     progression du défilement (ink→accent pour le fond, paper→ink pour le
+     texte) — la paire s'inverse en douceur pour rester lisible même une
+     fois le fond devenu clair. Les valeurs ci-dessous ne servent qu'avant
+     le premier calcul JS (ou si JS est indisponible). */
+  background-color: var(--footer-bg, var(--ink));
+  color: var(--footer-fg, var(--paper));
+}
+
+.reveal-footer-inner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /* Top/bas seulement : les marges gauche/droite viennent de .wrap (dont
+     cet élément hérite aussi la classe) — ne pas les écraser ici, sinon le
+     panneau perd ses marges latérales dès que l'écran est plus étroit que
+     --container (elles ne sont alors plus "gratuites" via les marges auto
+     du conteneur centré). */
+  padding-top: 10rem;
+  padding-bottom: 2.5rem;
+}
+
+.reveal-footer-title {
+  font-size: clamp(2.4rem, 7vw, 5rem);
+  color: var(--footer-fg, var(--paper));
+  max-width: none;
+}
+.reveal-footer-top .section-intro { color: var(--footer-fg, var(--paper)); opacity: 0.75; }
+.reveal-footer-top .btn { margin-top: 1.4rem; }
+/* Le bouton plein utilise la paire inversée (fond = fg du panneau, texte =
+   bg du panneau) afin de toujours ressortir nettement, que le panneau soit
+   sombre ou clair — même logique que .hero-actions .btn-solid. */
+.reveal-footer-top .btn-solid {
+  background: var(--footer-fg, var(--paper));
+  color: var(--footer-bg, var(--ink));
+  border-color: var(--footer-fg, var(--paper));
+}
+.reveal-footer-top .btn-solid:hover {
+  background: transparent;
+  color: var(--footer-fg, var(--paper));
+  border-color: var(--footer-fg, var(--paper));
+}
+
+.footer-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 2.2rem;
+  margin-bottom: 2rem;
+}
+.footer-contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--footer-fg, var(--paper));
+  font-size: clamp(1rem, 2.2vw, 1.3rem);
+  border-bottom: 1px solid transparent;
+}
+.footer-contact-link:hover { border-color: var(--footer-fg, var(--paper)); }
+.footer-contact-link .external-icon { flex-shrink: 0; opacity: 0.75; }
+
+.footer-inner {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  opacity: 0.65;
+  border-top: 1px solid currentColor;
+  padding-top: 1.5rem;
+}
+
+/* Apparition en cascade du contenu du panneau, une fois celui-ci
+   suffisamment déployé (classe posée en JS selon la progression du
+   défilement — voir main.js). */
+.reveal-footer-item {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-footer.is-visible .reveal-footer-item { opacity: 1; transform: none; }
+.reveal-footer-top .reveal-footer-item:nth-child(1) { transition-delay: 0s; }
+.reveal-footer-top .reveal-footer-item:nth-child(2) { transition-delay: 0.08s; }
+.reveal-footer-top .reveal-footer-item:nth-child(3) { transition-delay: 0.16s; }
+.reveal-footer-bottom .reveal-footer-item:nth-child(1) { transition-delay: 0.24s; }
+.reveal-footer-bottom .reveal-footer-item:nth-child(2) { transition-delay: 0.3s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-footer-item { transition: none !important; opacity: 1 !important; transform: none !important; }
+}
+
+/* ---------- Apparition au défilement (légère) ---------- */
+
+.reveal { opacity: 0; transform: translateY(12px); transition: opacity 0.55s ease-out, transform 0.55s ease-out; }
+.reveal.is-visible { opacity: 1; transform: none; }
+
+/* Fondu seul, sans transform : pour les éléments qui portent déjà une
+   parallaxe (data-parallax), afin que les deux ne se disputent pas la
+   propriété transform. */
+.reveal-fade { opacity: 0; transition: opacity 0.6s ease-out; }
+.reveal-fade.is-visible { opacity: 1; }
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 900px) {
+  .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .about-photo { max-width: 340px; }
+  .two-col { grid-template-columns: 1fr; gap: 3rem; }
+  .timeline-item { grid-template-columns: 1fr; gap: 0.3rem; }
+  .slider-slide { width: min(80vw, 340px); }
+  .expertise-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Sur tablette/mobile, le contenu tient sur une hauteur bien inférieure à
+     100vh : avec justify-content: space-between hérité du bureau, l'espace
+     entre le bouton (haut) et les coordonnées (bas) devient disproportionné.
+     On resserre les deux blocs avec un écart fixe plutôt que de les écarteler
+     sur toute la hauteur du panneau. */
+  .reveal-footer-inner {
+    justify-content: flex-start;
+    gap: 3rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .main-nav { display: none; }
+  .header-cta { display: none; }
+  .nav-toggle { display: flex; }
+  .expertise-grid { grid-template-columns: 1fr; }
+
+  /* Le fond flou (backdrop-filter) de .is-scrolled crée, pour toute la durée
+     où il s'applique, un « containing block » pour ses descendants en
+     position fixe (c'est la règle CSS derrière filter/backdrop-filter) : le
+     menu mobile ci-dessous, bien qu'en position: fixed; inset: 0, se
+     retrouvait alors calé sur la boîte de l'en-tête plutôt que sur tout
+     l'écran dès qu'on l'ouvrait après avoir défilé. On neutralise donc le
+     flou pendant que le menu est ouvert, ce qui n'a de toute façon aucun
+     effet visible puisque le fond devient un ink plein juste en dessous. */
+  .site-header.nav-open {
+    background: var(--ink);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .site-header.nav-open .main-nav {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    inset: 0;
+    padding: 7rem 2rem 2rem;
+    background: var(--ink);
+    gap: 1.4rem;
+  }
+  .site-header.nav-open .main-nav a {
+    color: var(--paper) !important;
+    font-size: 1.2rem;
+    border-left: none;
+    padding: 0;
+  }
+  .site-header.nav-open .nav-toggle span { background: var(--paper) !important; }
+  .site-header.nav-open .nav-toggle span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+  .site-header.nav-open .nav-toggle span:nth-child(2) { opacity: 0; }
+  .site-header.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+  .section { padding: 4.5rem 0; }
+}
+
+/* ---------- Parallaxe légère (vanilla JS, sans librairie) ---------- */
+
+/* Image parallaxe : surdimensionnée et décalée pour pouvoir dériver dans
+   son cadre sans jamais révéler d'espace vide, peu importe le défilement. */
+.photo-frame.has-parallax { overflow: hidden; }
+.photo-frame.has-parallax img {
+  top: -15%;
+  height: 130%;
+  bottom: auto;
+}
+
+[data-parallax] { will-change: transform; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-parallax] { transform: none !important; }
+}
